@@ -41,7 +41,7 @@ grep maK /proc/modules
 
 grep maK_it /proc/kallsyms
 
-ls /sys/modules | grep maK
+ls /sys/module | grep maK
 
 modinfo maK_it
 
